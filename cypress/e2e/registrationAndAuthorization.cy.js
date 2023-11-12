@@ -1,36 +1,49 @@
-describe('registration and authorization', () => {
+import user from '../fixtures/user.json';
+import { faker } from '@faker-js/faker';
+import homePage from '../support/pages/HomePage';
+import loginPage from '../support/pages/LoginPage';
+import registrationPage from '../support/pages/RegistrationPage';
+import accountPage from '../support/pages/AccountPage';
+
+user.email = faker.internet.email({ provider: '1secmail.com'});
+user.loginName = faker.internet.userName();
+user.firstName = faker.person.firstName();
+user.lastName = faker.person.lastName();
+user.fax = faker.phone.number();
+user.phone = faker.phone.number();
+user.companyName = faker.company.name();
+user.postcode = faker.location.zipCode('####');
+
+describe('Succesfull registration', () => {
+  
   it('registration', () => {
-    cy.visit('https://automationteststore.com/');
-    cy.get('#customer_menu_top').click();
-    cy.get('.btn.btn-orange.pull-right[title="Continue"]').click();
-    cy.get('#AccountFrm_firstname').type('tester15'); 
-    cy.get('#AccountFrm_lastname').type('tester15'); 
-    cy.get('#AccountFrm_email').type('tester15@1secmail.com'); 
-    cy.get('#AccountFrm_telephone').type('0123456789'); 
-    cy.get('#AccountFrm_fax').type('9876543210'); 
-    cy.get('#AccountFrm_company').type('Company');     
-    cy.get('#AccountFrm_address_1').type('Address1');     
-    cy.get('#AccountFrm_address_2').type('Address2');     
-    cy.get('#AccountFrm_city').type('City');
-    cy.get('[name="country_id"]').select('Ukraine').should('have.value', '220');
-    cy.get('#AccountFrm_zone_id').select('Kyiv').should('have.value', '3490');     
-    cy.get('#AccountFrm_postcode').type('12345');     
-    cy.get('#AccountFrm_loginname').type('tester15');     
-    cy.get('#AccountFrm_password').type('Password1!');
-    cy.get('#AccountFrm_confirm').type('Password1!');
-    cy.get('#AccountFrm_newsletter1').check();
-    cy.get('#AccountFrm_agree').check();
-    cy.get('.btn.btn-orange.pull-right').click();
-    cy.get('.maintext').should('have.text', ' Your Account Has Been Created!')
+    homePage.visit();
+
+    cy.log('Opening registration page...');
+    homePage.getHeaderAccountButton().click();
+    loginPage.getRegistrationAccountButton().click();
+
+    registrationPage.fillRegistrationFields(user);
+
+    cy.log('Submit registration form...');
+    registrationPage.getNewsLetterCheckbox().check();
+    registrationPage.getPrivacyPolicyCheckbox().check();
+    registrationPage.getSubmitRegistrationFormButton().click();
+
+    cy.log('Verify first name displayed on account page...');
+    accountPage.getFirstNameText().should('contain', user.firstName);
+
   });
 
   it('authorization', () => {
-    cy.visit('https://automationteststore.com/');
-    cy.get('#customer_menu_top').click();
-    cy.get('#loginFrm_loginname').type('tester15');
-    cy.get('#loginFrm_password').type('Password1!');
-    cy.get('[title="Login"]').click();
-    cy.get('.heading2').should('have.text', 'My Account');
+    homePage.visit();
+    homePage.getHeaderAccountButton().click();
+    loginPage.fillLoginFields(user)
+    loginPage.getSubmitLoginButton().click();
+    
+    cy.log('Verify first name displayed on account page...');
+    accountPage.getFirstNameText().should('contain', user.firstName);
+
 
   })
 })
